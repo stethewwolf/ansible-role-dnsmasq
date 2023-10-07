@@ -70,6 +70,7 @@
     chain: INPUT
     protocol: udp
     destination_port: 67
+    source: "{{ item.ip }}/{{ item.netmask }}"
     jump: ACCEPT
   notify: run_iptables_save
   loop: "{{ dnsmasq_networks }}"
