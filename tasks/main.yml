@@ -1,5 +1,5 @@
 ---
-- name: Install openvpn packages
+- name: Install dnsmasq packages
   apt:
     name: "{{ item }}"
     state: latest
@@ -28,16 +28,23 @@
   notify: restart_dnsmasq
   when: dnsmasq_dhcp_enabled == "false"
 
-
-- name: add entry to hosts file
-  ansible.builtin.lineinfile:
-    path: /etc/hosts
-    line: "{{ item.ip }}\t{{ item.name }} "
-  loop: "{{ dns_etries }}"
+- name: Add upstram dns servers
+  lineinfile:
+    path: /etc/dnsmasq.conf
+    line: "server={{ item }}"
+  loop: "{{ upstream_dns_servers }}"
   notify: restart_dnsmasq
 
-- name: Allow connections on dnsmasq port from vpn - tcp
-  ansible.builtin.iptables:
+- name: Add custom entries
+  lineinfile:
+    path: /etc/dnsmasq.conf
+    line: "host-record={{ item.name }},{{ item.ip }}"
+  loop: "{{ dns_etries }}"
+  notify: restart_dnsmasq
+  when: dns_etries is defined
+
+- name: Allow connections to dnsmasq on selected networks - port 53/tcp
+  iptables:
     chain: INPUT
     protocol: tcp
     source: "{{ item.ip }}/{{ item.netmask }}"
@@ -45,18 +52,10 @@
     jump: ACCEPT
   notify: run_iptables_save
   loop: "{{ dnsmasq_networks }}"
+  when: dnsmasq_networks is defined
 
-- name: Allow connections on dnsmasq port 67 from  - udp
-  ansible.builtin.iptables:
-    chain: INPUT
-    protocol: udp
-    destination_port: 67
-    jump: ACCEPT
-  notify: run_iptables_save
-  loop: "{{ dnsmasq_networks }}"
-
-- name: Allow connections on dnsmasq port from vpn - udp
-  ansible.builtin.iptables:
+- name: Allow connections to dnsmasq on selected networks - port 53/udp
+  iptables:
     chain: INPUT
     protocol: udp
     source: "{{ item.ip }}/{{ item.netmask }}"
@@ -64,3 +63,16 @@
     jump: ACCEPT
   notify: run_iptables_save
   loop: "{{ dnsmasq_networks }}"
+  when: dnsmasq_networks is defined
+
+- name: Allow connections to dnsmasq on selected networks - port 67/udp
+  iptables:
+    chain: INPUT
+    protocol: udp
+    destination_port: 67
+    jump: ACCEPT
+  notify: run_iptables_save
+  loop: "{{ dnsmasq_networks }}"
+  when: dnsmasq_networks is defined
+
+
