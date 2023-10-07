@@ -1,0 +1,3 @@
+## Here internal variables for dnsmasq
+dnsmasq_packages:
+  - dnsmasq

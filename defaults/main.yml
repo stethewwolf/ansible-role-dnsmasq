@@ -1,0 +1,16 @@
+## Here default variables for dnsmasq
+# all hosts using this role should override them
+
+dnsmasq_listen_addr: "192.168.100.2"
+dnsmasq_domain: "test.net"
+dnsmasq_ip_range: "192.168.100.32,192.168.100.250,255.255.255.0,12h"
+dnsmasq_ip_gw: "192.168.100.1"
+dnsmasq_ip_dns: "192.168.100.2"
+dnsmasq_dhcp_enabled: "true"
+dnsmasq_networks:
+  - { ip: "192.168.100.0", netmask: "255.255.255.0" }
+
+dns_etries:
+  - { ip: "192.168.100.2", name : "wp.test.net" }
+  - { ip: "192.168.100.2", name : "test.test.net" }
+  - { ip: "192.168.100.2", name : "git.test.net" }

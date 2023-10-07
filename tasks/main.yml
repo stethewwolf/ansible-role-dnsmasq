@@ -1,0 +1,66 @@
+---
+- name: Install openvpn packages
+  apt:
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+  loop: "{{ dnsmasq_packages }}"
+
+- name: Template dnsmasq conf
+  template:
+    src: dnsmasq.conf_dhcp
+    dest: /etc/dnsmasq.conf
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+    backup: true
+  notify: restart_dnsmasq
+  when: dnsmasq_dhcp_enabled == "true"
+
+- name: Template dnsmasq conf
+  template:
+    src: dnsmasq.conf_no_dhcp
+    dest: /etc/dnsmasq.conf
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+    backup: true
+  notify: restart_dnsmasq
+  when: dnsmasq_dhcp_enabled == "false"
+
+
+- name: add entry to hosts file
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    line: "{{ item.ip }}\t{{ item.name }} "
+  loop: "{{ dns_etries }}"
+  notify: restart_dnsmasq
+
+- name: Allow connections on dnsmasq port from vpn - tcp
+  ansible.builtin.iptables:
+    chain: INPUT
+    protocol: tcp
+    source: "{{ item.ip }}/{{ item.netmask }}"
+    destination_port: 53
+    jump: ACCEPT
+  notify: run_iptables_save
+  loop: "{{ dnsmasq_networks }}"
+
+- name: Allow connections on dnsmasq port 67 from  - udp
+  ansible.builtin.iptables:
+    chain: INPUT
+    protocol: udp
+    destination_port: 67
+    jump: ACCEPT
+  notify: run_iptables_save
+  loop: "{{ dnsmasq_networks }}"
+
+- name: Allow connections on dnsmasq port from vpn - udp
+  ansible.builtin.iptables:
+    chain: INPUT
+    protocol: udp
+    source: "{{ item.ip }}/{{ item.netmask }}"
+    destination_port: 53
+    jump: ACCEPT
+  notify: run_iptables_save
+  loop: "{{ dnsmasq_networks }}"
