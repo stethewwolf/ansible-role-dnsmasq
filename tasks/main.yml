@@ -6,7 +6,7 @@
     update_cache: yes
   loop: "{{ dnsmasq_packages }}"
 
-- name: Template dnsmasq conf
+- name: Template dnsmasq conf - dhcp enabled
   template:
     src: dnsmasq.conf_dhcp
     dest: /etc/dnsmasq.conf
@@ -17,7 +17,7 @@
   notify: restart_dnsmasq
   when: dnsmasq_dhcp_enabled
 
-- name: Template dnsmasq conf
+- name: Template dnsmasq conf - dhcp not enabled
   template:
     src: dnsmasq.conf_no_dhcp
     dest: /etc/dnsmasq.conf
@@ -26,7 +26,7 @@
     mode: u=rw,g=r,o=r
     backup: true
   notify: restart_dnsmasq
-  when: dnsmasq_dhcp_enabled 
+  when: dnsmasq_dhcp_enabled == false
 
 - name: Add upstram dns servers
   lineinfile:
@@ -70,10 +70,8 @@
     chain: INPUT
     protocol: udp
     destination_port: 67
-    source: "{{ item.ip }}/{{ item.netmask }}"
     jump: ACCEPT
   notify: run_iptables_save
-  loop: "{{ dnsmasq_networks }}"
-  when: dnsmasq_networks is defined
+  when: dnsmasq_networks is defined and dnsmasq_dhcp_enabled
 
 
