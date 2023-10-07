@@ -1,7 +1,7 @@
 ## Here default variables for dnsmasq
 # all hosts using this role should override them
 
-dnsmasq_dhcp_enabled: "true"
+dnsmasq_dhcp_enabled: true
 
 upstream_dns_servers:
   - 208.67.220.220
