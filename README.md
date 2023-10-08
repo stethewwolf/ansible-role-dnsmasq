@@ -1,6 +1,8 @@
 # ansible-role-dnsmasq
 Ansible role for dnsmasq, this role is intended to be used to configure and manage a dnsmasq installation
 
+This role require [ansible-common-role](https://github.com/stethewwolf/ansible-common-role).
+
 ## Features
 ### Packages installed
 This role install only the `dnsmasq` package
