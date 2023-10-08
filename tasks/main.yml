@@ -35,13 +35,13 @@
   loop: "{{ upstream_dns_servers }}"
   notify: restart_dnsmasq
 
-- name: Add custom entries
+- name: Add custom dns entries
   lineinfile:
     path: /etc/dnsmasq.conf
     line: "host-record={{ item.name }},{{ item.ip }}"
-  loop: "{{ dns_etries }}"
+  loop: "{{ dns_entries }}"
   notify: restart_dnsmasq
-  when: dns_etries is defined
+  when: dns_entries is defined
 
 - name: Allow connections to dnsmasq on selected networks - port 53/tcp
   iptables:
