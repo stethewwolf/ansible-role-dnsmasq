@@ -1,0 +1,17 @@
+ 
+listen-address=127.0.0.1,{{ dnsmasq_listen_addr }}
+bogus-priv
+no-resolv
+
+local=/{{ dnsmasq_domain }}/
+dhcp-range={{ dnsmasq_ip_range }}
+
+#default gateway
+dhcp-option=3,{{ dnsmasq_ip_gw }}
+
+#default dns server
+#dhcp-option=6,{{ dnsmasq_ip_dns }}
+
+dhcp-authoritative
+domain={{ dnsmasq_domain }}/
+expand-hosts

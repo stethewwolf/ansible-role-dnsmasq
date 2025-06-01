@@ -1,3 +1,17 @@
-#SPDX-License-Identifier: MIT-0
----
-# defaults file for test
+## Here default variables for dnsmasq
+# all hosts using this role should override them
+
+dnsmasq_dhcp_enabled: "true"
+
+upstream_dns_servers:
+  - 208.67.220.220
+  - 208.67.222.222
+
+dnsmasq_listen_addr: ""
+
+dnsmasq_domain: ""
+dnsmasq_ip_range: ""
+dnsmasq_ip_gw: ""
+dnsmasq_ip_dns: ""
+
+

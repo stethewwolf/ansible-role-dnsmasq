@@ -1,0 +1,6 @@
+ 
+listen-address=127.0.0.1,{{ dnsmasq_listen_addr }}
+bogus-priv
+no-resolv
+local=/{{ dnsmasq_domain }}/
+

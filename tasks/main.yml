@@ -1,3 +1,78 @@
-#SPDX-License-Identifier: MIT-0
 ---
-# tasks file for test
+- name: Install dnsmasq packages
+  apt:
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+  loop: "{{ dnsmasq_packages }}"
+
+- name: Template dnsmasq conf
+  template:
+    src: dnsmasq.conf_dhcp
+    dest: /etc/dnsmasq.conf
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+    backup: true
+  notify: restart_dnsmasq
+  when: dnsmasq_dhcp_enabled == "true"
+
+- name: Template dnsmasq conf
+  template:
+    src: dnsmasq.conf_no_dhcp
+    dest: /etc/dnsmasq.conf
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+    backup: true
+  notify: restart_dnsmasq
+  when: dnsmasq_dhcp_enabled == "false"
+
+- name: Add upstram dns servers
+  lineinfile:
+    path: /etc/dnsmasq.conf
+    line: "server={{ item }}"
+  loop: "{{ upstream_dns_servers }}"
+  notify: restart_dnsmasq
+
+- name: Add custom entries
+  lineinfile:
+    path: /etc/dnsmasq.conf
+    line: "host-record={{ item.name }},{{ item.ip }}"
+  loop: "{{ dns_etries }}"
+  notify: restart_dnsmasq
+  when: dns_etries is defined
+
+- name: Allow connections to dnsmasq on selected networks - port 53/tcp
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    source: "{{ item.ip }}/{{ item.netmask }}"
+    destination_port: 53
+    jump: ACCEPT
+  notify: run_iptables_save
+  loop: "{{ dnsmasq_networks }}"
+  when: dnsmasq_networks is defined
+
+- name: Allow connections to dnsmasq on selected networks - port 53/udp
+  iptables:
+    chain: INPUT
+    protocol: udp
+    source: "{{ item.ip }}/{{ item.netmask }}"
+    destination_port: 53
+    jump: ACCEPT
+  notify: run_iptables_save
+  loop: "{{ dnsmasq_networks }}"
+  when: dnsmasq_networks is defined
+
+- name: Allow connections to dnsmasq on selected networks - port 67/udp
+  iptables:
+    chain: INPUT
+    protocol: udp
+    destination_port: 67
+    jump: ACCEPT
+  notify: run_iptables_save
+  loop: "{{ dnsmasq_networks }}"
+  when: dnsmasq_networks is defined
+
+

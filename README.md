@@ -1,38 +1,80 @@
-Role Name
-=========
+# ansible-role-dnsmasq
+Ansible role for dnsmasq, this role is intended to be used to configure and manage a dnsmasq installation
 
-A brief description of the role goes here.
+## Features
+### Packages installed
+This role install only the `dnsmasq` package
 
-Requirements
-------------
+### Firewall 
+This role open the port 53 both tpc and udp and the port 67/udp on the allowed networks, see [Allowed networks](#Allowed networks)
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+## Options
+This role hase different options:
 
-Role Variables
---------------
+* enable/disable dhcp
+* manage custom dns entry
+* manage custom upstram servers
+* manage listen address
+* manage allowed networks
+* manage dhcp options
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+### Enable disable option
+This option can be managed:
+```
+dnsmasq_dhcp_enabled: "true"
+```
+### Manage custom dns entries
+When the `dns_enties` is defined:
+```
+dns_etries:
+  - { ip: "192.168.100.2", name : "test.test.net,wp.test.net" }
+  - { ip: "192.168.100.3", name : "git.test.net" }
+```
 
-Dependencies
-------------
+This role add a line to the file  `dnsmasq.conf`:
+```
+    host-record=test.test.net,wp.test.net,192.168.100.2
+    host-record=git.test.net,192.168.100.3
+```
+If this variable is not set, dnsmasq will resolve the query using the defined dns server and the content of `/etc/hosts` file.
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+### Upstream Servers
+The upstream dns servers can be managed using the variable:
+```
+upstream_dns_servers:
+  - 208.67.220.220
+  - 208.67.222.222
+```
 
-Example Playbook
-----------------
+**NB:** /etc/resolv.conf is ignored
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+### Listen addresses
+By default this role configure dnsmasq to listen only on locolhost, adding ip values to:
+```
+dnsmasq_listen_addr: "192.168.100.3"
+```
+It will listen on more intefaces.
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+### Allowed networks
+It is possible to manage the Firewall using this congiuration
+```
+dnsmasq_networks:
+  - { ip: "192.168.100.0", netmask: "255.255.255.0" }
+```
 
-License
--------
+By default if this conf is not specified, no rules are added.
 
-MIT
+### DHCP option
+Available dhcp options:
+```
+dnsmasq_domain: "test.net"
+dnsmasq_ip_range: "192.168.100.32,192.168.100.250,255.255.255.0,12h"
+dnsmasq_ip_gw: "192.168.100.1"
+dnsmasq_ip_dns: "192.168.100.2"
+```
 
-Author Information
-------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+
+
+## References
+* [dnsmasq man page](https://dnsmasq.org/docs/dnsmasq-man.html)
